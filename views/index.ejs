@@ -15,7 +15,16 @@
     <% if (typeof sentence != 'undefined') { %>
       <h3><%= sentence %></h3>
       <% if (sintagmas && sintagmas.length > 0) { %>
-        <h4>La oración se compone de los sintagmas: <%= sintagmas.toString() %></h4>
+        <h5>Oración Correcta</h5>
+        <p>La oración se compone de los sintagmas: <%= sintagmas.toString() %></p>
+      <% } else { %>
+        <% if (words.some(word => !word.hasData())) { %>
+          <h5>No se lograrón reconocer todas las palabras</h5>
+          <p>Es necesario reconocer cada palabra para determinar si la oración es valida</p>
+        <% } else { %>
+          <h5>Oración incorrecta</h5>
+          <p>El automata no fue capaz de identificar la oración como válida</p>
+        <% } %>
       <% } %>
       <style>
       h3:first-letter{
@@ -26,13 +35,21 @@
         <tr>
           <th>Posición</th>
           <th>Palabra</th>
-          <th>Es un</th>
+          <th>Tipo</th>
+          <th>Singular?</th>
+          <th>Plural?</th>
+          <th>Masculino?</th>
+          <th>Femenino?</th>
         </tr>
         <% words.forEach(word => { %>
         <tr>
           <td><%= word.index %></td>
           <td><%= word.name %></td>
-          <td><%= (word.types) ? word.types.toString() : 'Desconocida' %></td>
+          <td><%= (word.hasData()) ? word.types.toString() : 'Desconocido' %></td>
+          <td><%= (word.hasData()) ? word.isSingular() ? 'Sí' : 'No' : 'Desconocido' %></td>
+          <td><%= (word.hasData()) ? word.isPlural() ? 'Sí' : 'No' : 'Desconocido' %></td>
+          <td><%= (word.hasData()) ? word.isMasculine() ? 'Sí' : 'No' : 'Desconocido' %></td>
+          <td><%= (word.hasData()) ? word.isFeminine() ? 'Sí' : 'No' : 'Desconocido' %></td>
         </tr>
         <% }) %>  
       </table>
