@@ -93,6 +93,14 @@ function tryToGetSintagmaNominalPositions(sentence, startAt = 0) {
   ) {
     return { start: startAt, end: startAt + 2 }
   }
+  if (
+    (sentence[startAt].types.some(type => type == 'possessive')) &&
+    (sentence[startAt + 1].types.some(type => type == 'noun')) &&
+    (sentence[startAt].isSingular() == sentence[startAt + 1].isSingular()) &&
+    (sentence[startAt].isMasculine() == sentence[startAt + 1].isMasculine())
+  ) {
+    return { start: startAt, end: startAt + 2 }
+  }
 }
 
 /**
@@ -112,7 +120,14 @@ function tryToGetSintagmaAdjetivalPositions(sentence, startAt = 0) {
   }
 
   if (!sentence[startAt + 1] || !sentence[startAt + 1].hasData()) return { start: startAt, end: startAt }
-  if (sentence[startAt].types.some(type => type == 'quantifier') && sentence[startAt + 1].types.some(type => type == 'adj')) return { start: startAt, end: startAt + 2 }
+  if (
+    (sentence[startAt].types.some(type => type == 'quantifier')) &&
+    (sentence[startAt + 1].types.some(type => type == 'adj')) &&
+    (sentence[startAt].isSingular() == sentence[startAt + 1].isSingular()) &&
+    (sentence[startAt].isMasculine() == sentence[startAt + 1].isMasculine())
+  ) {
+    return { start: startAt, end: startAt + 2 }
+  }
 
   return { start: startAt, end: startAt }
 }
@@ -131,9 +146,28 @@ function tryToGetSintagmaAdverbialPositions(sentence, startAt = 0) {
   ) {
     return { start: startAt, end: startAt + 1 }
   }
-
+  
   if (!sentence[startAt + 1] || !sentence[startAt + 1].hasData()) return { start: startAt, end: startAt }
   if (sentence[startAt].types.some(type => type == 'quantifier') && sentence[startAt + 1].types.some(type => type == 'adv')) return { start: startAt, end: startAt + 2 }
+
+  return { start: startAt, end: startAt }
+}
+
+/**
+ * @param {Object} sentence
+ * @param {Object} startAt 
+ * @return {Object} Regresa un objeto de este tipo {start: pos, end: pos}
+ */
+function tryToGetSintagmaPreposicionalPositions(sentence, startAt = 0) {
+  if (!sentence[startAt] || !sentence[startAt].hasData()) return { start: startAt, end: startAt }
+
+  if (!sentence[startAt + 1] || !sentence[startAt + 1].hasData()) return { start: startAt, end: startAt }
+  if (sentence[startAt].types.some(type => type == 'preposition')) {
+    if (result = tryToGetSintagmaNominalPositions(sentence, startAt + 1)) return { start: startAt, end: result.end }
+    if ((result = tryToGetSintagmaAdverbialPositions(sentence, startAt + 1)).end > startAt) return { start: startAt, end: result.end }
+    if ((result = tryToGetSintagmaAdjetivalPositions(sentence, startAt + 1)).end > startAt) return { start: startAt, end: result.end }
+    if ((result = tryToGetSintagmaPreposicionalPositions(sentence, startAt + 1)).end > startAt) return { start: startAt, end: result.end }
+  }
 
   return { start: startAt, end: startAt }
 }
@@ -171,7 +205,10 @@ function checkSentence(sentence, lastCheckedPosition = 0, detectedPartsOfSentenc
     detectedPartsOfSentence.push('SN')
     result = tryToGetAdyacentePositions(sentence, result.end)
     lastCheckedPosition = result.end
-    // console.log('last checked pos SN', sentence, lastCheckedPosition, detectedPartsOfSentence)
+    if ((result = tryToGetSintagmaPreposicionalPositions(sentence, lastCheckedPosition)).end > lastCheckedPosition) {
+      detectedPartsOfSentence.push('SPrep')
+      lastCheckedPosition = result.end
+    }
 
   } else if (result = tryToGetSintagmaVerbalPositions(sentence, lastCheckedPosition)) {
     detectedPartsOfSentence.push('SV')
@@ -182,23 +219,24 @@ function checkSentence(sentence, lastCheckedPosition = 0, detectedPartsOfSentenc
       result = tryToGetSintagmaAdverbialPositions(sentence, result.end)
       if (result.end > oldResult.end) detectedPartsOfSentence.push('SAdv')
     }
-
     lastCheckedPosition = result.end
-    // console.log('last checked pos SV', sentence, lastCheckedPosition, detectedPartsOfSentence)
+    if ((result = tryToGetSintagmaPreposicionalPositions(sentence, lastCheckedPosition)).end > lastCheckedPosition) {
+      detectedPartsOfSentence.push('SPrep')
+      lastCheckedPosition = result.end
+    }
+
+  } else if ((result = tryToGetSintagmaPreposicionalPositions(sentence, lastCheckedPosition)).end > lastCheckedPosition) {
+    detectedPartsOfSentence.push('SPrep')
+    lastCheckedPosition = result.end
 
   } else {
-    // console.log('entro en else')
     return { parts: detectedPartsOfSentence, lastCheckedPosition }
   }
 
   if (sentence.length > lastCheckedPosition) {
-    // console.log('entro en condicion')
     return checkSentence(sentence, lastCheckedPosition, detectedPartsOfSentence)
-    // console.log(detectedPartsOfSentence)
 
   } else {
-    // console.log('entro en else de condicion')
-    // console.log(detectedPartsOfSentence)
     return { parts: detectedPartsOfSentence, lastCheckedPosition }
   }
 
