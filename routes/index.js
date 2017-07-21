@@ -45,8 +45,8 @@ const Type = sequelize.define('type', {
 /**
  * DEFINE ASSOCIATIONS
  */
-Word.belongsToMany(Type, { through: 'WordType' })
-Type.belongsToMany(Word, { through: 'WordType' })
+Word.belongsToMany(Type, { through: 'wordtype' })
+Type.belongsToMany(Word, { through: 'wordtype' })
 
 /**
  * RUN SYNC
