@@ -5,3 +5,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+.btn:focus, 
+.btn:active:focus, 
+.btn.active:focus, 
+.btn.focus, 
+.btn:active.focus, 
+.btn.active.focus {
+  outline: none;  
+}
+
+h3:first-letter{
+  text-transform: capitalize
+}
