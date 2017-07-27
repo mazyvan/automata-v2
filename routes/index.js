@@ -2,7 +2,7 @@ let express = require('express')
 let router = express.Router()
 let Sequelize = require('sequelize')
 
-const sequelize = new Sequelize('uni_automata', 'uni_automata', 'uni_automata123', {
+const sequelize = new Sequelize('check_uni_automata', 'uni_automata', 'uni_automata123', {
   host: 'localhost',
   dialect: 'mysql',
   pool: {
@@ -146,7 +146,7 @@ function tryToGetSintagmaAdverbialPositions(sentence, startAt = 0) {
   ) {
     return { start: startAt, end: startAt + 1 }
   }
-  
+
   if (!sentence[startAt + 1] || !sentence[startAt + 1].hasData()) return { start: startAt, end: startAt }
   if (sentence[startAt].types.some(type => type == 'quantifier') && sentence[startAt + 1].types.some(type => type == 'adv')) return { start: startAt, end: startAt + 2 }
 
@@ -202,6 +202,7 @@ function tryToGetAdyacentePositions(sentence, startAt = 0) {
  */
 function checkSentence(sentence, lastCheckedPosition = 0, detectedPartsOfSentence = []) {
   if (result = tryToGetSintagmaNominalPositions(sentence, lastCheckedPosition)) {
+    if (detectedPartsOfSentence.slice(-1)[0] == 'SN') return { error: 'Una oración no puede tener 2 sintagmas nominales juntos' }
     detectedPartsOfSentence.push('SN')
     result = tryToGetAdyacentePositions(sentence, result.end)
     lastCheckedPosition = result.end
@@ -211,6 +212,7 @@ function checkSentence(sentence, lastCheckedPosition = 0, detectedPartsOfSentenc
     }
 
   } else if (result = tryToGetSintagmaVerbalPositions(sentence, lastCheckedPosition)) {
+    if (detectedPartsOfSentence.slice(-1)[0] == 'SV') return { error: 'Una oración no puede tener 2 sintagmas verbales juntos' }
     detectedPartsOfSentence.push('SV')
     let oldResult = result
     result = tryToGetSintagmaAdjetivalPositions(sentence, result.end)
@@ -299,7 +301,8 @@ router.get('/', function (req, res, next) {
         res.render('index', {
           sentence: req.query.sentence,
           words: words,
-          sintagmas: sentenceChecked.parts
+          sintagmas: sentenceChecked.parts,
+          error: (sentenceChecked.error) ? sentenceChecked.error : undefined
         })
       }
     })
