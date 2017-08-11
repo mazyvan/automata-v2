@@ -3,7 +3,7 @@
 <head>
   <title>Traductor Español/Esperanto</title>
   <link rel='stylesheet' href='./stylesheets/bootstrap-paper.min.css' />
-  <link rel='stylesheet' href='./stylesheets/style.css' />
+  <link rel='stylesheet' href='./stylesheets/style.css?v=1' />
 </head>
 <body style="background-color: #f5f5f5;">
   <div class="jumbotron">
@@ -13,13 +13,17 @@
       <input class="btn" type="submit" value="Consultar">
     </form>
     <% if (typeof sentence != 'undefined') { %>
-      <h3><%= sentence %></h3>
+      <h3 class="capitalize"><%= sentence %></h3>
       <% if(error) { %>
         <h5>Oración incorrecta</h5>
         <p>Error: <%= error %></p>
       <% } else if (sintagmas && sintagmas.length > 0) { %>
         <h5>Oración Correcta</h5>
         <p>La oración se compone de los sintagmas: <%= sintagmas.toString() %></p>
+        <% if(words.every(word => word.esperanto)) { %>
+          <h5>Traducción</h5>
+          <p class="capitalize"><strong><% words.forEach(word => { %><%= word.esperanto %> <% }) %></strong></p>
+        <% } %>
       <% } else if (words.some(word => !word.hasData())) { %>
         <h5>No se lograrón reconocer todas las palabras</h5>
         <p>Es necesario reconocer cada palabra para determinar si la oración es valida</p>
@@ -36,6 +40,7 @@
           <th>Plural?</th>
           <th>Masculino?</th>
           <th>Femenino?</th>
+          <th>Esperanto</th>
         </tr>
         <% words.forEach(word => { %>
         <tr>
@@ -46,8 +51,9 @@
           <td><%= (word.hasData()) ? word.isPlural() ? 'Sí' : 'No' : 'Desconocido' %></td>
           <td><%= (word.hasData()) ? word.isMasculine() ? 'Sí' : 'No' : 'Desconocido' %></td>
           <td><%= (word.hasData()) ? word.isFeminine() ? 'Sí' : 'No' : 'Desconocido' %></td>
+          <td><%= (word.hasData()) ? word.esperanto : 'Desconocida' %></td>
         </tr>
-        <% }) %>  
+        <% }) %>
       </table>
     <% } %>
   </div>

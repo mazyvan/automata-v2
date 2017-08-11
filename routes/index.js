@@ -31,6 +31,7 @@ const Word = sequelize.define('word', {
     type: Sequelize.STRING(30),
     primaryKey: true
   },
+  esperanto: Sequelize.STRING(30),
   number: Sequelize.BOOLEAN,
   gender: Sequelize.BOOLEAN,
 })
@@ -210,7 +211,7 @@ function tryToRemoveExclamationMarks(sentence) {
     if (sentence[0] == '¡' && sentence[sentence.length - 1] != '!') return { error: 'La oración exclamativa no termina con el signo "!"', sentence: sentence }
     if (sentence[0] != '¡' && sentence[sentence.length - 1] == '!') return { error: 'La oración exclamativa no comienza con el signo "¡"', sentence: sentence }
     let invalidStarts = /^(¡que|¡como|¡quien|¡por que|¡cuando|¡donde|¡a quien|¡cuanto)\b/
-    if (invalidStarts.test((sentence.split(' ')[0] + ' ' + sentence.split(' ')[1]).toLowerCase())) return { error: 'La oración exclamativa es incorrecta', sentence: sentence }    
+    if (invalidStarts.test((sentence.split(' ')[0] + ' ' + sentence.split(' ')[1]).toLowerCase())) return { error: 'La oración exclamativa es incorrecta', sentence: sentence }
     return { sentence: sentence.slice(1, sentence.length - 1) }
   } else return { error: 'La oración exclamativa es incorrecta', sentence: sentence }
 }
@@ -312,6 +313,8 @@ router.get('/', function (req, res, next) {
         name: word,
         hasData: () => (result) ? true : false,
 
+        esperanto: (result) ? result.dataValues.esperanto : undefined,
+
         isPlural: () => (result) ? (result.dataValues.number == null) | result.dataValues.number : undefined,
         isSingular: () => (result) ? (result.dataValues.number == null) | !result.dataValues.number : undefined,
 
@@ -320,6 +323,7 @@ router.get('/', function (req, res, next) {
 
         number: (result) ? result.dataValues.number : undefined,
         gender: (result) ? result.dataValues.gender : undefined,
+
         types: (result) ? result.dataValues.types.map(type => type.name) : undefined
       })
       foundedWords++

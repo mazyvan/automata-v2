@@ -15,6 +15,6 @@ a {
   outline: none;  
 }
 
-h3:first-letter{
-  text-transform: capitalize
+.capitalize:first-letter{
+  text-transform: capitalize;
 }
