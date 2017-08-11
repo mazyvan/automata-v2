@@ -2,7 +2,7 @@ let express = require('express')
 let router = express.Router()
 let Sequelize = require('sequelize')
 
-const sequelize = new Sequelize('check_uni_automata', 'uni_automata', 'uni_automata123', {
+const sequelize = new Sequelize('uni_automata', 'uni_automata', 'uni_automata123', {
   host: 'localhost',
   dialect: 'mysql',
   pool: {
